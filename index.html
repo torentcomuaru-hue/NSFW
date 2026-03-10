@@ -141,8 +141,8 @@
   </nav>
 
   <script>
-    const API_KEY = "sk-bauhyhovijcnkatyrujilbejiuepanlqmutuaeqyamsijtur";
-    const MODEL = "Qwen/Qwen3-235B-A22B-Instruct-2507";
+    const API_KEY = "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";
+    const MODEL = "qwen/qwen2.5-vl-72b-instruct";
 
     let tokens = parseInt(localStorage.getItem('tokens')) || 2;
     let currentChatTemp = null;
@@ -155,80 +155,50 @@
 
     async function callLLM(userText) {
       if (!SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]) {
-        return "Ошибка: нет промпта для модели";
+        return "Ошибка: нет промпта для этой модели";
       }
 
       const systemPrompt = SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]
         .replace('{fetishes}', currentChatTemp.fetishes.join(', ') || 'нет');
 
-      // Список endpoint'ов — от самого стабильного
-      const endpoints = [
-        "https://api.siliconflow.com/v1/chat/completions",        // глобальный (лучше всего в Европе)
-        "https://api-us.siliconflow.cn/v1/chat/completions",      // американское зеркало
-        "https://api.siliconflow.cn/v1/chat/completions",         // основной китайский
-        "https://api-st.siliconflow.cn/v1/chat/completions"       // стабильное зеркало
-      ];
+      try {
+        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "HTTP-Referer": "https://jovial-florentine-189126.netlify.app",
+            "X-Title": "NSFW Chat",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: MODEL,
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...currentChatTemp.messages.map(m => ({
+                role: m.sender === "user" ? "user" : "assistant",
+                content: m.text
+              }))
+            ],
+            temperature: 0.95,
+            max_tokens: 800,
+            top_p: 0.95
+          })
+        });
 
-      let loadingMsg = addMessage('bot', 'Пробуем подключиться к серверу...');
-
-      for (let i = 0; i < endpoints.length; i++) {
-        const url = endpoints[i];
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 12000);
-
-          const res = await fetch(url, {
-            method: "POST",
-            signal: controller.signal,
-            headers: {
-              "Authorization": `Bearer ${API_KEY}`,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              model: MODEL,
-              messages: [
-                { role: "system", content: systemPrompt },
-                ...currentChatTemp.messages.map(m => ({
-                  role: m.sender === "user" ? "user" : "assistant",
-                  content: m.text
-                }))
-              ],
-              temperature: 0.95,
-              max_tokens: 800,
-              top_p: 0.95
-            })
-          });
-
-          clearTimeout(timeout);
-
-          if (!res.ok) {
-            console.warn(`[${i+1}/${endpoints.length}] ${url} → ${res.status}`);
-            continue;
-          }
-
-          const data = await res.json();
-          let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
-          reply = reply.replace(/\n+/g, '\n').trim();
-
-          loadingMsg.remove();
-          return reply;
-        } catch (e) {
-          console.warn(`[${i+1}/${endpoints.length}] ${url} → ${e.name}: ${e.message}`);
-          continue;
+        if (!res.ok) {
+          const err = await res.text();
+          console.error("OpenRouter error:", err);
+          return "Ошибка сервера... попробуй позже ❤️";
         }
+
+        const data = await res.json();
+        let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
+        reply = reply.replace(/\n+/g, '\n').trim();
+        return reply;
+      } catch (e) {
+        console.error("OpenRouter fetch failed:", e);
+        return "Не удалось подключиться... попробуй позже ❤️";
       }
-
-      loadingMsg.remove();
-      return "Не удалось подключиться к модели ни через один сервер... попробуй позже или включи VPN ❤️";
-    }
-
-    function addMessage(sender, text) {
-      const div = document.createElement('div');
-      div.className = `message ${sender}`;
-      div.textContent = text;
-      document.getElementById('chat-messages').appendChild(div);
-      div.scrollIntoView({behavior:'smooth'});
-      return div;
     }
 
     async function sendMessage() {
@@ -252,11 +222,28 @@
       renderMessages(currentChatTemp.messages);
       input.value = '';
 
+      const loading = document.createElement('div');
+      loading.className = 'message bot loading';
+      loading.textContent = 'Печатает...';
+      document.getElementById('chat-messages').appendChild(loading);
+      loading.scrollIntoView({behavior:'smooth'});
+
       const reply = await callLLM(text);
+
+      loading.remove();
 
       currentChatTemp.messages.push({ sender: 'bot', text: reply });
       currentChatTemp.lastMsg = reply.slice(0,40)+'…';
       renderMessages(currentChatTemp.messages);
+    }
+
+    function addMessage(sender, text) {
+      const div = document.createElement('div');
+      div.className = `message ${sender}`;
+      div.textContent = text;
+      document.getElementById('chat-messages').appendChild(div);
+      div.scrollIntoView({behavior:'smooth'});
+      return div;
     }
 
     function renderMessages(messages) {
