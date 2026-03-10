@@ -155,22 +155,31 @@
 
     async function callLLM(userText) {
       if (!SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]) {
-        return "Ошибка: нет промпта для этой модели";
+        return "Ошибка: нет промпта для модели";
       }
 
       const systemPrompt = SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]
         .replace('{fetishes}', currentChatTemp.fetishes.join(', ') || 'нет');
 
+      // Список endpoint'ов — от самого стабильного
       const endpoints = [
-        "https://api.siliconflow.com/v1/chat/completions",      // глобальный
-        "https://api.siliconflow.cn/v1/chat/completions",       // основной
-        "https://api-us.siliconflow.cn/v1/chat/completions"     // US-зеркало
+        "https://api.siliconflow.com/v1/chat/completions",        // глобальный (лучше всего в Европе)
+        "https://api-us.siliconflow.cn/v1/chat/completions",      // американское зеркало
+        "https://api.siliconflow.cn/v1/chat/completions",         // основной китайский
+        "https://api-st.siliconflow.cn/v1/chat/completions"       // стабильное зеркало
       ];
 
-      for (const url of endpoints) {
+      let loadingMsg = addMessage('bot', 'Пробуем подключиться к серверу...');
+
+      for (let i = 0; i < endpoints.length; i++) {
+        const url = endpoints[i];
         try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 12000);
+
           const res = await fetch(url, {
             method: "POST",
+            signal: controller.signal,
             headers: {
               "Authorization": `Bearer ${API_KEY}`,
               "Content-Type": "application/json"
@@ -190,19 +199,36 @@
             })
           });
 
-          if (!res.ok) continue;
+          clearTimeout(timeout);
+
+          if (!res.ok) {
+            console.warn(`[${i+1}/${endpoints.length}] ${url} → ${res.status}`);
+            continue;
+          }
 
           const data = await res.json();
           let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
           reply = reply.replace(/\n+/g, '\n').trim();
+
+          loadingMsg.remove();
           return reply;
         } catch (e) {
-          console.warn(`Endpoint ${url} failed: ${e.message}`);
+          console.warn(`[${i+1}/${endpoints.length}] ${url} → ${e.name}: ${e.message}`);
           continue;
         }
       }
 
-      return "Не удалось подключиться к модели... попробуй позже ❤️";
+      loadingMsg.remove();
+      return "Не удалось подключиться к модели ни через один сервер... попробуй позже или включи VPN ❤️";
+    }
+
+    function addMessage(sender, text) {
+      const div = document.createElement('div');
+      div.className = `message ${sender}`;
+      div.textContent = text;
+      document.getElementById('chat-messages').appendChild(div);
+      div.scrollIntoView({behavior:'smooth'});
+      return div;
     }
 
     async function sendMessage() {
@@ -226,27 +252,11 @@
       renderMessages(currentChatTemp.messages);
       input.value = '';
 
-      const loading = document.createElement('div');
-      loading.className = 'message bot loading';
-      loading.textContent = 'Печатает...';
-      document.getElementById('chat-messages').appendChild(loading);
-      loading.scrollIntoView({behavior:'smooth'});
-
       const reply = await callLLM(text);
-
-      loading.remove();
 
       currentChatTemp.messages.push({ sender: 'bot', text: reply });
       currentChatTemp.lastMsg = reply.slice(0,40)+'…';
       renderMessages(currentChatTemp.messages);
-    }
-
-    function addMessage(sender, text) {
-      const div = document.createElement('div');
-      div.className = `message ${sender}`;
-      div.textContent = text;
-      document.getElementById('chat-messages').appendChild(div);
-      div.scrollIntoView({behavior:'smooth'});
     }
 
     function renderMessages(messages) {
