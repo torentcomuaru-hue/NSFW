@@ -161,38 +161,48 @@
       const systemPrompt = SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]
         .replace('{fetishes}', currentChatTemp.fetishes.join(', ') || 'нет');
 
-      try {
-        const res = await fetch("https://api.siliconflow.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${API_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: MODEL,
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...currentChatTemp.messages.map(m => ({
-                role: m.sender === "user" ? "user" : "assistant",
-                content: m.text
-              }))
-            ],
-            temperature: 0.95,
-            max_tokens: 800,
-            top_p: 0.95
-          })
-        });
+      const endpoints = [
+        "https://api.siliconflow.com/v1/chat/completions",      // глобальный
+        "https://api.siliconflow.cn/v1/chat/completions",       // основной
+        "https://api-us.siliconflow.cn/v1/chat/completions"     // US-зеркало
+      ];
 
-        if (!res.ok) return "Ошибка API... попробуй позже 😏";
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: MODEL,
+              messages: [
+                { role: "system", content: systemPrompt },
+                ...currentChatTemp.messages.map(m => ({
+                  role: m.sender === "user" ? "user" : "assistant",
+                  content: m.text
+                }))
+              ],
+              temperature: 0.95,
+              max_tokens: 800,
+              top_p: 0.95
+            })
+          });
 
-        const data = await res.json();
-        let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
-        reply = reply.replace(/\n+/g, '\n').trim();
-        return reply;
-      } catch (e) {
-        console.error(e);
-        return "Что-то сломалось... пиши ещё, не останавливайся ❤️";
+          if (!res.ok) continue;
+
+          const data = await res.json();
+          let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
+          reply = reply.replace(/\n+/g, '\n').trim();
+          return reply;
+        } catch (e) {
+          console.warn(`Endpoint ${url} failed: ${e.message}`);
+          continue;
+        }
       }
+
+      return "Не удалось подключиться к модели... попробуй позже ❤️";
     }
 
     async function sendMessage() {
