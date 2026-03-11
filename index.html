@@ -254,31 +254,72 @@
       box-shadow: 0 10px 30px rgba(139,92,246,0.6);
     }
 
-    /* Профиль */
-    #profile-screen .profile-card {
-      background: var(--glass);
-      backdrop-filter: blur(14px);
+    /* Дизайн вкладки "Чаты" — как в мессенджере */
+    .chat-history {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 0;
+    }
+    .chat-item {
+      background: rgba(255,255,255,0.06);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 24px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
     }
-    #profile-screen h2 {
-      font-size: 26px;
-      color: var(--accent2);
-      margin-bottom: 8px;
+    .chat-item:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateX(3px);
     }
-    #profile-screen .balance-display {
-      font-size: 20px;
-      color: #ffd700;
-      margin: 16px 0;
+    .chat-item img {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: black;
     }
-    #profile-screen .buy-btn {
-      margin: 16px 0;
-      padding: 14px 48px;
+    .chat-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .chat-info h4 {
+      font-size: 16px;
+      margin: 0 0 4px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chat-info p {
+      font-size: 13px;
+      color: #aaa;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .delete-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
       font-size: 18px;
+      line-height: 28px;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
     }
   </style>
 </head>
@@ -286,7 +327,7 @@
 
   <header>
     <div>NSFW Chat</div>
-    <div class="balance" id="balance-btn">💎 Токены: <span id="balance">2</span></div>
+    <div class="balance" id="balance-btn">💎 Токены: <span id="balance">15</span></div>
   </header>
 
   <main>
@@ -396,7 +437,7 @@
         </h2>
 
         <p style="font-size: 20px; color: #ffd700; margin: 16px 0;">
-          Баланс: <span id="profile-balance">2</span> 💎
+          Баланс: <span id="profile-balance">15</span> 💎
         </p>
 
         <button class="buy-btn" onclick="showScreen('shop')" style="
@@ -453,9 +494,8 @@
     function updateBalance() {
       document.getElementById('balance').textContent = tokens;
       localStorage.setItem('tokens', tokens);
-      if (document.getElementById('profile-balance')) {
-        document.getElementById('profile-balance').textContent = tokens;
-      }
+      const profileBal = document.getElementById('profile-balance');
+      if (profileBal) profileBal.textContent = tokens;
     }
 
     async function callLLM(userText) {
@@ -579,22 +619,9 @@
     }
 
     function updateProfile() {
-      let userName = "Аноним";
-      if (window.Telegram?.WebApp) {
-        const user = window.Telegram.WebApp.initDataUnsafe?.user;
-        if (user) {
-          userName = [user.first_name, user.last_name].filter(Boolean).join(' ') || "Аноним";
-        }
-      }
-      document.getElementById('user-name').textContent = userName;
-
       document.getElementById('profile-balance').textContent = tokens;
-
-      const totalMsgs = currentChatTemp?.messages?.length || 0;
-      document.getElementById('total-messages').textContent = totalMsgs;
+      document.getElementById('total-messages').textContent = currentChatTemp?.messages?.length || 0;
       document.getElementById('spent-tokens').textContent = 2 - tokens;
-
-      // Любимая модель — можно улучшить позже
       document.getElementById('favorite-model').textContent = currentChatTemp?.name || 'Пока не выбрана';
     }
 
@@ -680,6 +707,12 @@
       const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
       const cont = document.getElementById('chat-history');
       cont.innerHTML = '';
+
+      if (history.length === 0) {
+        cont.innerHTML = '<p style="text-align:center; color:#aaa; padding:30px 0;">Нет сохранённых чатов</p>';
+        return;
+      }
+
       history.forEach((chat, idx) => {
         const item = document.createElement('div');
         item.className = 'chat-item';
@@ -689,12 +722,14 @@
                         'https://i.postimg.cc/vZtNqm9S/69b0212d75b81069bec1bf35.jpg'}" alt="">
           <div class="chat-info">
             <h4>${chat.name}</h4>
-            <p>${chat.lastMsg || '…'}</p>
+            <p>${chat.lastMsg || 'Нет сообщений'}</p>
           </div>
           <button class="delete-btn" data-idx="${idx}">×</button>
         `;
-        item.onclick = e => {
+
+        item.onclick = (e) => {
           if (e.target.classList.contains('delete-btn')) {
+            e.stopPropagation();
             let h = JSON.parse(localStorage.getItem('chat_history') || '[]');
             h.splice(idx, 1);
             localStorage.setItem('chat_history', JSON.stringify(h));
@@ -707,6 +742,7 @@
           renderMessages(chat.messages);
           updateSaveButtonVisibility();
         };
+
         cont.appendChild(item);
       });
     }
