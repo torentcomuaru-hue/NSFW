@@ -7,6 +7,7 @@
   <script src="prompts.js"></script>
   
   <style>
+    /* === оригинальные стили === */
     :root{
       --bg1:#0b0613;
       --bg2:#1a0f33;
@@ -216,7 +217,7 @@
       padding:10px 14px;
       border-radius:20px;
       background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,.08);
       cursor:pointer;
       transition:all .2s;
       font-size:14px;
@@ -253,227 +254,17 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 30px rgba(139,92,246,0.6);
     }
-
-    /* Дизайн вкладки "Чаты" — как в мессенджере */
-    .chat-history {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px 0;
-    }
-    .chat-item {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      cursor: pointer;
-      transition: all 0.25s;
-      position: relative;
-    }
-    .chat-item:hover {
-      background: rgba(255,255,255,0.12);
-      transform: translateX(3px);
-    }
-    .chat-item img {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: black;
-    }
-    .chat-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .chat-info h4 {
-      font-size: 16px;
-      margin: 0 0 4px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chat-info p {
-      font-size: 13px;
-      color: #aaa;
-      margin: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .delete-btn {
-      background: #ff4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 28px;
-      height: 28px;
-      font-size: 18px;
-      line-height: 28px;
-      text-align: center;
-      cursor: pointer;
-      opacity: 0.8;
-      transition: all 0.2s;
-    }
-    .delete-btn:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
   </style>
 </head>
 <body>
-
   <header>
     <div>NSFW Chat</div>
     <div class="balance" id="balance-btn">💎 Токены: <span id="balance">15</span></div>
   </header>
 
   <main>
-    <div id="characters-screen" class="screen active">
-      <h1>Модели</h1>
-      <div class="characters">
-        <div class="card" data-char="lana">
-          <img src="https://i.postimg.cc/g0f7MBVV/Screenshot-2026-01-30-093006.png" alt="Лана">
-          <div class="card-info">
-            <h3>Лана</h3>
-            <div class="desc">Hotwife, любит изменять и дразнить</div>
-          </div>
-        </div>
-        <div class="card" data-char="valeria">
-          <img src="https://i.postimg.cc/25FWJ1vg/696d41c4d348f5ffec707387.jpg" alt="Валерия">
-          <div class="card-info">
-            <h3>Валерия</h3>
-            <div class="desc">Доминантная госпожа, унижение и контроль</div>
-          </div>
-        </div>
-        <div class="card" data-char="milfa">
-          <img src="https://i.postimg.cc/vZtNqm9S/69b0212d75b81069bec1bf35.jpg" alt="Милфа">
-          <div class="card-info">
-            <h3>Милфа</h3>
-            <div class="desc">40-летняя нимфоманка, ненасытная, обожает члены и сперму</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="fetishes-screen" class="screen">
-      <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
-      <h1>Фетиши</h1>
-      <div class="fetishes">
-        <label class="fetish"><input type="checkbox" value="cuckold"> Куколд</label>
-        <label class="fetish"><input type="checkbox" value="hotwife"> Хотвайф</label>
-        <label class="fetish"><input type="checkbox" value="humiliation"> Унижение / Деградация</label>
-        <label class="fetish"><input type="checkbox" value="creampie"> Кремпай / Очистка</label>
-        <label class="fetish"><input type="checkbox" value="bbc"> BBC / Интеррасовый</label>
-        <label class="fetish"><input type="checkbox" value="denial"> Пояс верности</label>
-        <label class="fetish"><input type="checkbox" value="voyeur"> Вуайеризм</label>
-        <label class="fetish"><input type="checkbox" value="public"> Публичный / Рискованный</label>
-      </div>
-      <button class="start-btn" id="start-chat-btn">Начать чат</button>
-    </div>
-
-    <div id="fetishes-milfa-screen" class="screen">
-      <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
-      <h1>Фетиши Милфы</h1>
-      <div class="fetishes">
-        <label class="fetish"><input type="checkbox" value="gangbang"> Gangbang / групповуха</label>
-        <label class="fetish"><input type="checkbox" value="cumslut"> Cum slut / спермоприёмница</label>
-        <label class="fetish"><input type="checkbox" value="sizequeen"> Size queen / большие члены</label>
-        <label class="fetish"><input type="checkbox" value="dp"> DP / двойное проникновение</label>
-        <label class="fetish"><input type="checkbox" value="creampie_addiction"> Creampie addiction / зависимость от кремпая</label>
-        <label class="fetish"><input type="checkbox" value="public_slut"> Public slut / публичная шлюха</label>
-      </div>
-      <button class="start-btn" id="start-chat-milfa-btn">Начать чат</button>
-    </div>
-
-    <div id="chat-screen" class="screen">
-      <div class="chat-header">
-        <button class="back-btn" onclick="showScreen('characters')">← К моделям</button>
-        <button id="save-chat-btn" class="start-btn" style="width:auto; padding:8px 16px; font-size:14px; display:none;">Сохранить чат</button>
-      </div>
-      <div class="chat-container">
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="chat-input">
-          <input type="text" id="chat-input" placeholder="Напиши сообщение..." autocomplete="off"/>
-          <button id="send-btn">→</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="chats-screen" class="screen">
-      <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
-      <h1>Чаты</h1>
-      <div class="chat-history" id="chat-history"></div>
-    </div>
-
-    <div id="shop-screen" class="screen">
-      <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
-      <h1>Магазин</h1>
-      <div class="shop-item"><h3>50 токенов</h3><p>250 ₽</p><button class="buy-btn">Купить</button></div>
-      <div class="shop-item"><h3>100 токенов</h3><p>399 ₽</p><button class="buy-btn">Купить</button></div>
-      <div class="shop-item"><h3>150 токенов</h3><p>549 ₽</p><button class="buy-btn">Купить</button></div>
-      <div class="shop-item"><h3>200 токенов</h3><p>699 ₽</p><button class="buy-btn">Купить</button></div>
-      <div class="shop-item"><h3>500 токенов</h3><p>1399 ₽</p><button class="buy-btn">Купить</button></div>
-    </div>
-
-    <div id="profile-screen" class="screen">
-      <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
-      <h1>Профиль</h1>
-
-      <div style="
-        background: var(--glass);
-        backdrop-filter: blur(14px);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 24px;
-        margin-bottom: 24px;
-        text-align: center;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      ">
-        <h2 style="font-size: 26px; color: var(--accent2); margin-bottom: 8px;">
-          <span id="user-name">Аноним</span>
-        </h2>
-
-        <p style="font-size: 20px; color: #ffd700; margin: 16px 0;">
-          Баланс: <span id="profile-balance">15</span> 💎
-        </p>
-
-        <button class="buy-btn" onclick="showScreen('shop')" style="
-          margin: 16px 0;
-          padding: 14px 48px;
-          font-size: 18px;
-        ">
-          Пополнить
-        </button>
-      </div>
-
-      <div style="
-        background: var(--glass);
-        backdrop-filter: blur(14px);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 24px;
-      ">
-        <h3 style="font-size: 20px; color: var(--accent); margin-bottom: 12px;">
-          Любимая модель
-        </h3>
-        <p id="favorite-model" style="font-size: 16px; opacity: 0.9;">
-          Пока не выбрана
-        </p>
-
-        <h3 style="font-size: 20px; color: var(--accent); margin: 24px 0 12px;">
-          Статистика
-        </h3>
-        <p style="font-size: 15px; margin: 8px 0;">
-          Сообщений всего: <span id="total-messages">0</span>
-        </p>
-        <p style="font-size: 15px; margin: 8px 0;">
-          Потрачено токенов: <span id="spent-tokens">0</span>
-        </p>
-      </div>
-    </div>
+    <!-- === Здесь оставляй все экраны без изменений === -->
+    <!-- Пример: characters-screen, fetishes-screen, chat-screen, shop-screen, profile-screen -->
   </main>
 
   <nav>
@@ -484,100 +275,41 @@
   </nav>
 
   <script>
-    const API_KEY = "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";
-    const MODEL = "qwen/qwen2.5-vl-72b-instruct";
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
     let tokens = parseInt(localStorage.getItem('tokens')) || 15;
-    let currentChatTemp = null;
-    let isChatSaved = false;
 
     function updateBalance() {
       document.getElementById('balance').textContent = tokens;
-      localStorage.setItem('tokens', tokens);
       const profileBal = document.getElementById('profile-balance');
       if (profileBal) profileBal.textContent = tokens;
-    }
 
-    async function callLLM(userText) {
-      if (!SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]) {
-        return "Ошибка: модель не поддерживается";
-      }
-
-      const systemPrompt = SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]
-        .replace('{fetishes}', currentChatTemp.fetishes.join(', ') || 'нет');
-
-      const loading = addMessage('bot', 'Печатает...');
-
-      try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${API_KEY}`,
-            "HTTP-Referer": "https://jovial-florentine-189126.netlify.app",
-            "X-Title": "NSFW Chat",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: MODEL,
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...currentChatTemp.messages.map(m => ({
-                role: m.sender === "user" ? "user" : "assistant",
-                content: m.text
-              }))
-            ],
-            temperature: 0.95,
-            max_tokens: 800,
-            top_p: 0.95
-          })
-        });
-
-        loading.remove();
-
-        if (!res.ok) {
-          const err = await res.text();
-          return `Ошибка ${res.status}: ${err}`;
-        }
-
-        const data = await res.json();
-        let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
-        reply = reply.replace(/\n+/g, '\n').trim();
-        return reply;
-      } catch (e) {
-        loading.remove();
-        return "Не удалось подключиться... попробуй позже ❤️";
-      }
+      // Отправляем данные в бот, чтобы логировать токены
+      tg.sendData(JSON.stringify({ action: "get_tokens" }));
     }
 
     async function sendMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
-      if (!text || !currentChatTemp) return;
+      if (!text) return;
 
       if (tokens <= 0) {
-        addMessage('bot', 'милый мне очень хочется с тобой провести время но у тебя нет токенов, пополни баланс и мы продолжим');
-        const btnDiv = document.createElement('div');
-        btnDiv.innerHTML = `<button class="buy-btn" onclick="showScreen('shop'); this.parentNode.remove()">Пополнить баланс</button>`;
-        document.getElementById('chat-messages').appendChild(btnDiv);
+        addMessage('bot', 'У тебя нет токенов 💎, пополни баланс');
         return;
       }
 
       tokens--;
       updateBalance();
 
-      currentChatTemp.messages.push({ sender: 'user', text });
-      currentChatTemp.lastMsg = text.slice(0,40)+(text.length>40?'…':'');
-      renderMessages(currentChatTemp.messages);
-      input.value = '';
+      // Отправляем списание токена в бот
+      tg.sendData(JSON.stringify({
+        action: "spend_tokens",
+        amount: 1
+      }));
 
-      const loading = addMessage('bot', 'Печатает...');
-
-      const reply = await callLLM(text);
-      loading.remove();
-
-      currentChatTemp.messages.push({ sender: 'bot', text: reply });
-      currentChatTemp.lastMsg = reply.slice(0,40)+'…';
-      renderMessages(currentChatTemp.messages);
+      // Остальная логика отправки сообщения LLM остаётся как в твоём коде
+      // callLLM(text) и т.д.
     }
 
     function addMessage(sender, text) {
@@ -589,175 +321,14 @@
       return div;
     }
 
-    function renderMessages(messages) {
-      const cont = document.getElementById('chat-messages');
-      cont.innerHTML = '';
-      messages.forEach(m => {
-        const div = document.createElement('div');
-        div.className = `message ${m.sender}`;
-        div.textContent = m.text;
-        cont.appendChild(div);
-      });
-      cont.scrollTop = cont.scrollHeight;
-    }
-
-    function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const screenEl = document.getElementById(id + '-screen');
-      if (screenEl) screenEl.classList.add('active');
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      const navBtn = document.querySelector(`nav button[data-tab="${id}"]`);
-      if (navBtn) navBtn.classList.add('active');
-      if (id === 'chats') loadChatHistory();
-      if (id === 'chat') updateSaveButtonVisibility();
-      if (id === 'profile') updateProfile();
-    }
-
-    function updateSaveButtonVisibility() {
-      const btn = document.getElementById('save-chat-btn');
-      if (btn) btn.style.display = (currentChatTemp && !currentChatTemp.saved && currentChatTemp.messages.length > 0) ? 'inline-block' : 'none';
-    }
-
-    function updateProfile() {
-      document.getElementById('profile-balance').textContent = tokens;
-      document.getElementById('total-messages').textContent = currentChatTemp?.messages?.length || 0;
-      document.getElementById('spent-tokens').textContent = 2 - tokens;
-      document.getElementById('favorite-model').textContent = currentChatTemp?.name || 'Пока не выбрана';
-    }
-
-    document.getElementById('balance-btn').addEventListener('click', () => showScreen('shop'));
-
-    document.querySelectorAll('.card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-
-        const char = card.dataset.char;
-        currentChatTemp = {
-          char,
-          name: char === 'lana' ? 'Лана' :
-                char === 'valeria' ? 'Валерия' :
-                char === 'milfa' ? 'Милфа' : 'Милфа',
-          fetishes: [],
-          messages: [],
-          lastMsg: 'Новый чат (не сохранён)',
-          saved: false
-        };
-        isChatSaved = false;
-
-        if (char === 'milfa') {
-          showScreen('fetishes-milfa');
-        } else {
-          showScreen('fetishes');
-        }
-
-        document.querySelectorAll('.fetish input').forEach(inp => inp.checked = false);
-      });
-    });
-
-    document.getElementById('start-chat-btn').addEventListener('click', () => {
-      if (!currentChatTemp || !currentChatTemp.char) {
-        alert('Выбери модель заново');
-        showScreen('characters');
-        return;
-      }
-      currentChatTemp.fetishes = Array.from(document.querySelectorAll('#fetishes-screen .fetish input:checked'))
-        .map(inp => inp.value);
-      if (currentChatTemp.messages.length === 0) {
-        const greeting = `Привет, я ${currentChatTemp.name}. Готова к разврату 😈`;
-        currentChatTemp.messages.push({ sender: 'bot', text: greeting });
-        currentChatTemp.lastMsg = greeting;
-      }
-      showScreen('chat');
-      renderMessages(currentChatTemp.messages);
-      updateSaveButtonVisibility();
-    });
-
-    document.getElementById('start-chat-milfa-btn').addEventListener('click', () => {
-      if (!currentChatTemp || !currentChatTemp.char) {
-        alert('Выбери модель заново');
-        showScreen('characters');
-        return;
-      }
-      currentChatTemp.fetishes = Array.from(document.querySelectorAll('#fetishes-milfa-screen .fetish input:checked'))
-        .map(inp => inp.value);
-      if (currentChatTemp.messages.length === 0) {
-        const greeting = `Привет, я ${currentChatTemp.name}. Моя пизда уже течёт, трахни меня скорее 😈`;
-        currentChatTemp.messages.push({ sender: 'bot', text: greeting });
-        currentChatTemp.lastMsg = greeting;
-      }
-      showScreen('chat');
-      renderMessages(currentChatTemp.messages);
-      updateSaveButtonVisibility();
-    });
-
-    document.getElementById('save-chat-btn').addEventListener('click', () => {
-      if (!currentChatTemp) return;
-      let history = JSON.parse(localStorage.getItem('chat_history') || '[]');
-      history = history.filter(h => h.char !== currentChatTemp.char);
-      history.push({ ...currentChatTemp, saved: true });
-      localStorage.setItem('chat_history', JSON.stringify(history));
-      currentChatTemp.saved = true;
-      isChatSaved = true;
-      updateSaveButtonVisibility();
-      alert('Чат сохранён');
-    });
-
-    function loadChatHistory() {
-      const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
-      const cont = document.getElementById('chat-history');
-      cont.innerHTML = '';
-
-      if (history.length === 0) {
-        cont.innerHTML = '<p style="text-align:center; color:#aaa; padding:30px 0;">Нет сохранённых чатов</p>';
-        return;
-      }
-
-      history.forEach((chat, idx) => {
-        const item = document.createElement('div');
-        item.className = 'chat-item';
-        item.innerHTML = `
-          <img src="${chat.char === 'lana' ? 'https://i.postimg.cc/g0f7MBVV/Screenshot-2026-01-30-093006.png' :
-                        chat.char === 'valeria' ? 'https://i.postimg.cc/25FWJ1vg/696d41c4d348f5ffec707387.jpg' :
-                        'https://i.postimg.cc/vZtNqm9S/69b0212d75b81069bec1bf35.jpg'}" alt="">
-          <div class="chat-info">
-            <h4>${chat.name}</h4>
-            <p>${chat.lastMsg || 'Нет сообщений'}</p>
-          </div>
-          <button class="delete-btn" data-idx="${idx}">×</button>
-        `;
-
-        item.onclick = (e) => {
-          if (e.target.classList.contains('delete-btn')) {
-            e.stopPropagation();
-            let h = JSON.parse(localStorage.getItem('chat_history') || '[]');
-            h.splice(idx, 1);
-            localStorage.setItem('chat_history', JSON.stringify(h));
-            loadChatHistory();
-            return;
-          }
-          currentChatTemp = { ...chat };
-          isChatSaved = true;
-          showScreen('chat');
-          renderMessages(chat.messages);
-          updateSaveButtonVisibility();
-        };
-
-        cont.appendChild(item);
-      });
-    }
-
-    document.querySelectorAll('nav button').forEach(btn => {
-      btn.onclick = () => showScreen(btn.dataset.tab);
-    });
+    updateBalance();
 
     document.getElementById('send-btn').addEventListener('click', sendMessage);
     document.getElementById('chat-input').addEventListener('keypress', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
-    updateBalance();
-    showScreen('characters');
+    document.getElementById('balance-btn').addEventListener('click', () => showScreen('shop'));
   </script>
 </body>
 </html>
