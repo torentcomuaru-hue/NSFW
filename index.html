@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NSFW Chat</title>
   <script src="prompts.js"></script>
- 
+  
   <style>
     :root{
       --bg1:#0b0613;
@@ -253,6 +253,7 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 30px rgba(139,92,246,0.6);
     }
+
     /* Дизайн вкладки "Чаты" — как в мессенджере */
     .chat-history {
       display: flex;
@@ -323,10 +324,12 @@
   </style>
 </head>
 <body>
+
   <header>
     <div>NSFW Chat</div>
     <div class="balance" id="balance-btn">💎 Токены: <span id="balance">15</span></div>
   </header>
+
   <main>
     <div id="characters-screen" class="screen active">
       <h1>Модели</h1>
@@ -354,6 +357,7 @@
         </div>
       </div>
     </div>
+
     <div id="fetishes-screen" class="screen">
       <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
       <h1>Фетиши</h1>
@@ -369,6 +373,7 @@
       </div>
       <button class="start-btn" id="start-chat-btn">Начать чат</button>
     </div>
+
     <div id="fetishes-milfa-screen" class="screen">
       <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
       <h1>Фетиши Милфы</h1>
@@ -382,6 +387,7 @@
       </div>
       <button class="start-btn" id="start-chat-milfa-btn">Начать чат</button>
     </div>
+
     <div id="chat-screen" class="screen">
       <div class="chat-header">
         <button class="back-btn" onclick="showScreen('characters')">← К моделям</button>
@@ -395,11 +401,13 @@
         </div>
       </div>
     </div>
+
     <div id="chats-screen" class="screen">
       <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
       <h1>Чаты</h1>
       <div class="chat-history" id="chat-history"></div>
     </div>
+
     <div id="shop-screen" class="screen">
       <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
       <h1>Магазин</h1>
@@ -409,9 +417,11 @@
       <div class="shop-item"><h3>200 токенов</h3><p>699 ₽</p><button class="buy-btn">Купить</button></div>
       <div class="shop-item"><h3>500 токенов</h3><p>1399 ₽</p><button class="buy-btn">Купить</button></div>
     </div>
+
     <div id="profile-screen" class="screen">
       <button class="back-btn" onclick="showScreen('characters')">← Назад</button>
       <h1>Профиль</h1>
+
       <div style="
         background: var(--glass);
         backdrop-filter: blur(14px);
@@ -425,9 +435,11 @@
         <h2 style="font-size: 26px; color: var(--accent2); margin-bottom: 8px;">
           <span id="user-name">Аноним</span>
         </h2>
+
         <p style="font-size: 20px; color: #ffd700; margin: 16px 0;">
           Баланс: <span id="profile-balance">15</span> 💎
         </p>
+
         <button class="buy-btn" onclick="showScreen('shop')" style="
           margin: 16px 0;
           padding: 14px 48px;
@@ -436,6 +448,7 @@
           Пополнить
         </button>
       </div>
+
       <div style="
         background: var(--glass);
         backdrop-filter: blur(14px);
@@ -449,6 +462,7 @@
         <p id="favorite-model" style="font-size: 16px; opacity: 0.9;">
           Пока не выбрана
         </p>
+
         <h3 style="font-size: 20px; color: var(--accent); margin: 24px 0 12px;">
           Статистика
         </h3>
@@ -461,6 +475,7 @@
       </div>
     </div>
   </main>
+
   <nav>
     <button data-tab="characters" class="active">Модели</button>
     <button data-tab="chats">Чаты</button>
@@ -471,6 +486,7 @@
   <script>
     const API_KEY = "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";
     const MODEL = "qwen/qwen2.5-vl-72b-instruct";
+
     let tokens = parseInt(localStorage.getItem('tokens')) || 15;
     let currentChatTemp = null;
     let isChatSaved = false;
@@ -486,9 +502,12 @@
       if (!SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]) {
         return "Ошибка: модель не поддерживается";
       }
+
       const systemPrompt = SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]
         .replace('{fetishes}', currentChatTemp.fetishes.join(', ') || 'нет');
+
       const loading = addMessage('bot', 'Печатает...');
+
       try {
         const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
@@ -512,11 +531,14 @@
             top_p: 0.95
           })
         });
+
         loading.remove();
+
         if (!res.ok) {
           const err = await res.text();
           return `Ошибка ${res.status}: ${err}`;
         }
+
         const data = await res.json();
         let reply = data.choices?.[0]?.message?.content?.trim() || "Ммм... повтори, я отвлеклась~";
         reply = reply.replace(/\n+/g, '\n').trim();
@@ -525,6 +547,37 @@
         loading.remove();
         return "Не удалось подключиться... попробуй позже ❤️";
       }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text || !currentChatTemp) return;
+
+      if (tokens <= 0) {
+        addMessage('bot', 'милый мне очень хочется с тобой провести время но у тебя нет токенов, пополни баланс и мы продолжим');
+        const btnDiv = document.createElement('div');
+        btnDiv.innerHTML = `<button class="buy-btn" onclick="showScreen('shop'); this.parentNode.remove()">Пополнить баланс</button>`;
+        document.getElementById('chat-messages').appendChild(btnDiv);
+        return;
+      }
+
+      tokens--;
+      updateBalance();
+
+      currentChatTemp.messages.push({ sender: 'user', text });
+      currentChatTemp.lastMsg = text.slice(0,40)+(text.length>40?'…':'');
+      renderMessages(currentChatTemp.messages);
+      input.value = '';
+
+      const loading = addMessage('bot', 'Печатает...');
+
+      const reply = await callLLM(text);
+      loading.remove();
+
+      currentChatTemp.messages.push({ sender: 'bot', text: reply });
+      currentChatTemp.lastMsg = reply.slice(0,40)+'…';
+      renderMessages(currentChatTemp.messages);
     }
 
     function addMessage(sender, text) {
@@ -654,10 +707,12 @@
       const history = JSON.parse(localStorage.getItem('chat_history') || '[]');
       const cont = document.getElementById('chat-history');
       cont.innerHTML = '';
+
       if (history.length === 0) {
         cont.innerHTML = '<p style="text-align:center; color:#aaa; padding:30px 0;">Нет сохранённых чатов</p>';
         return;
       }
+
       history.forEach((chat, idx) => {
         const item = document.createElement('div');
         item.className = 'chat-item';
@@ -671,6 +726,7 @@
           </div>
           <button class="delete-btn" data-idx="${idx}">×</button>
         `;
+
         item.onclick = (e) => {
           if (e.target.classList.contains('delete-btn')) {
             e.stopPropagation();
@@ -686,6 +742,7 @@
           renderMessages(chat.messages);
           updateSaveButtonVisibility();
         };
+
         cont.appendChild(item);
       });
     }
@@ -693,61 +750,6 @@
     document.querySelectorAll('nav button').forEach(btn => {
       btn.onclick = () => showScreen(btn.dataset.tab);
     });
-
-    // ─────────────── Добавлено для связи с ботом ───────────────
-
-    function sendToBot(action, extra = {}) {
-      if (window.Telegram?.WebApp) {
-        Telegram.WebApp.sendData(JSON.stringify({ action, ...extra }));
-      }
-    }
-
-    // Запрашиваем актуальные токены при запуске
-    if (window.Telegram?.WebApp) {
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
-      sendToBot("get_tokens");
-    }
-
-    // ─────────────── Перехват отправки сообщения ───────────────
-    const originalSendMessage = sendMessage;
-    sendMessage = async function () {
-      const input = document.getElementById('chat-input');
-      const text = input.value.trim();
-      if (!text || !currentChatTemp) return;
-
-      if (tokens <= 0) {
-        addMessage('bot', 'милый мне очень хочется с тобой провести время но у тебя нет токенов, пополни баланс и мы продолжим');
-        const btnDiv = document.createElement('div');
-        btnDiv.innerHTML = `<button class="buy-btn" onclick="showScreen('shop'); this.parentNode.remove()">Пополнить баланс</button>`;
-        document.getElementById('chat-messages').appendChild(btnDiv);
-        return;
-      }
-
-      // Списываем токен через бота
-      sendToBot("spend_tokens", { amount: 1 });
-
-      // сразу уменьшаем локально
-      tokens--;
-      updateBalance();
-
-      // оригинальная логика
-      currentChatTemp.messages.push({ sender: 'user', text });
-      currentChatTemp.lastMsg = text.slice(0,40)+(text.length>40?'…':'');
-      renderMessages(currentChatTemp.messages);
-      input.value = '';
-
-      const loading = addMessage('bot', 'Печатает...');
-
-      const reply = await callLLM(text);
-      loading.remove();
-
-      currentChatTemp.messages.push({ sender: 'bot', text: reply });
-      currentChatTemp.lastMsg = reply.slice(0,40)+'…';
-      renderMessages(currentChatTemp.messages);
-    };
-
-    // ─────────────── Конец добавлений ───────────────
 
     document.getElementById('send-btn').addEventListener('click', sendMessage);
     document.getElementById('chat-input').addEventListener('keypress', e => {
