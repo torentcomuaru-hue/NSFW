@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NSFW Chat</title>
   <script src="prompts.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   
   <style>
     :root{
@@ -327,7 +328,7 @@
 
   <header>
     <div>NSFW Chat</div>
-    <div class="balance" id="balance-btn">💎 Токены: <span id="balance">15</span></div>
+    <div class="balance" id="balance-btn">💎 Токены: <span id="balance">загружается...</span></div>
   </header>
 
   <main>
@@ -437,7 +438,7 @@
         </h2>
 
         <p style="font-size: 20px; color: #ffd700; margin: 16px 0;">
-          Баланс: <span id="profile-balance">15</span> 💎
+          Баланс: <span id="profile-balance">загружается...</span> 💎
         </p>
 
         <button class="buy-btn" onclick="showScreen('shop')" style="
@@ -484,19 +485,49 @@
   </nav>
 
   <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // ──────────────────────────────
+    // Реальный баланс с сервера
+    // ──────────────────────────────
+    let tokens = 0;
+
+    const BALANCE_API = "https://твой-домен.com/api/get-balance";     // ← замени на свой backend
+    const SPEND_API   = "https://твой-домен.com/api/check-and-spend"; // ← замени на свой backend
+
+    async function loadBalance() {
+      try {
+        const res = await fetch(BALANCE_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ initData: tg.initData })
+        });
+
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        tokens = data.balance || 0;
+      } catch (err) {
+        tokens = 0;
+      }
+      updateBalanceDisplay();
+    }
+
+    function updateBalanceDisplay() {
+      document.getElementById('balance').textContent = tokens;
+      document.getElementById('profile-balance').textContent = tokens;
+    }
+
+    // ──────────────────────────────
+    // Твой оригинальный код дальше
+    // ──────────────────────────────
     const API_KEY = "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";
     const MODEL = "qwen/qwen2.5-vl-72b-instruct";
 
-    let tokens = parseInt(localStorage.getItem('tokens')) || 15;
     let currentChatTemp = null;
     let isChatSaved = false;
-
-    function updateBalance() {
-      document.getElementById('balance').textContent = tokens;
-      localStorage.setItem('tokens', tokens);
-      const profileBal = document.getElementById('profile-balance');
-      if (profileBal) profileBal.textContent = tokens;
-    }
 
     async function callLLM(userText) {
       if (!SYSTEM_PROMPT_TEMPLATES[currentChatTemp.char]) {
@@ -554,7 +585,16 @@
       const text = input.value.trim();
       if (!text || !currentChatTemp) return;
 
-      if (tokens <= 0) {
+      // Списание токена через сервер
+      const spendRes = await fetch(SPEND_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ initData: tg.initData, amount: 1 })
+      });
+
+      const spendData = await spendRes.json();
+
+      if (!spendData.success) {
         addMessage('bot', 'милый мне очень хочется с тобой провести время но у тебя нет токенов, пополни баланс и мы продолжим');
         const btnDiv = document.createElement('div');
         btnDiv.innerHTML = `<button class="buy-btn" onclick="showScreen('shop'); this.parentNode.remove()">Пополнить баланс</button>`;
@@ -562,8 +602,8 @@
         return;
       }
 
-      tokens--;
-      updateBalance();
+      tokens = spendData.new_balance;
+      updateBalanceDisplay();
 
       currentChatTemp.messages.push({ sender: 'user', text });
       currentChatTemp.lastMsg = text.slice(0,40)+(text.length>40?'…':'');
@@ -621,7 +661,7 @@
     function updateProfile() {
       document.getElementById('profile-balance').textContent = tokens;
       document.getElementById('total-messages').textContent = currentChatTemp?.messages?.length || 0;
-      document.getElementById('spent-tokens').textContent = 2 - tokens;
+      document.getElementById('spent-tokens').textContent = 2 - tokens; // адаптируй под реальную логику
       document.getElementById('favorite-model').textContent = currentChatTemp?.name || 'Пока не выбрана';
     }
 
@@ -756,7 +796,7 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     });
 
-    updateBalance();
+    loadBalance(); // ← загружаем баланс сразу
     showScreen('characters');
   </script>
 </body>
